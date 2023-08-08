@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.navi.mynewsservice.dao.NewsDao;
+import com.navi.mynewsservice.exception.CountryNotFoundException;
 import com.navi.mynewsservice.service.NewsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -82,7 +83,7 @@ public class NewsServiceImpl implements NewsService {
 
             int articlesLength = jsonResponse.get("articles").size();
             if (articlesLength == 0) {
-                return "No articles found for the given country and category.";
+                throw new CountryNotFoundException( "No articles found for the given country and category.");
             }
             return response;
         }catch (Exception e) {
