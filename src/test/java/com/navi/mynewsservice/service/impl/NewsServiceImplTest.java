@@ -36,7 +36,6 @@ public class NewsServiceImplTest {
         List<String> countries = Arrays.asList("Country1", "Country2");
         when(newsDao.getAllData(anyString())).thenReturn(countries);
         List<String> result = newsService.getAllCountries();
-
         assertEquals(countries, result);
     }
 
@@ -55,9 +54,7 @@ public class NewsServiceImplTest {
         String country = "NewCountry";
         doNothing().when(newsDao).addData(anyString(), anyString());
         newsService.addCountry(country);
-
         verify(newsDao).addData(anyString(), eq(country));
-
     }
 
 

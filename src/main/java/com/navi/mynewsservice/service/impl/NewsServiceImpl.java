@@ -23,7 +23,6 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public List<String> getAllCountries() {
-
         String path = "country.csv";
         return newsDao.getAllData(path);
     }

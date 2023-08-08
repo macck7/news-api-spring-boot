@@ -72,7 +72,7 @@ public class NewsController {
     }
 
     @GetMapping("/news/{id}")
-    public String getNewsById(@PathVariable String id) {
+    public String getNewsById(@PathVariable String id, @RequestParam(required = false) String count) {
         Integer userId = Integer.parseInt(id);
         User user = userMap.get(userId);
 

@@ -8,9 +8,6 @@ class CountryNotFoundExceptionTest {
 
     private CountryNotFoundException CountryNotFoundExceptionTest;
 
-    @BeforeEach
-    void setUp() {
-        CountryNotFoundExceptionTest  = new CountryNotFoundExceptionTest("message");
-    }
+
 
 }

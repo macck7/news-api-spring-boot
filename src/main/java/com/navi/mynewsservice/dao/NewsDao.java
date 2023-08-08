@@ -11,7 +11,7 @@ import java.util.List;
 @Component
 public class NewsDao {
 
-    public static List<String> getAllData(String file){
+    public List<String> getAllData(String file){
         List<String> data = new ArrayList<>();
         String path = "src/main/resources/static/"+file;
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
