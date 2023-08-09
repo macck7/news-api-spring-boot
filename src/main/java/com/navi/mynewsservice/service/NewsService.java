@@ -1,19 +1,13 @@
 package com.navi.mynewsservice.service;
 
+import com.navi.mynewsservice.entity.Article;
+
 import java.util.List;
 
 public interface NewsService {
 
-    public List<String> getAllCountries();
-    public List<String> getAllCategories();
-    public void addCountry(String country);
-    public void addCategory(String category);
 
+    public String addUserDetails(String email, String country, String category);
+    public List<Article> getNewsById(String country, String count);
 
-    public String checkValidEmail(String email) ;
-
-
-    public String showTopHeadlines(String country, String category);
-
-    public String showCountOfHeadlines(String country, String category, Integer count);
 }

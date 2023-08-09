@@ -1,17 +1,11 @@
-package com.navi.mynewsservice.dao;
-
-import org.springframework.stereotype.Repository;
-
+package com.navi.mynewsservice.entity;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 
-@Repository
+
+
 public class User {
-   // @Id
-   // @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+
+
     private String email;
     private String selectedCategory;
 
