@@ -24,7 +24,7 @@ class NewsServiceImplTest {
     @Mock
     private NewsDao newsDao;
 
-//    @InjectMocks
+    //@InjectMocks
     private NewsServiceImpl newsService;
 
     @BeforeEach
