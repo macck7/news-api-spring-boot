@@ -14,19 +14,25 @@ public class NewsServiceImpl implements NewsService {
     @Autowired
     private final RestTemplate restTemplate;
     @Autowired
-    NewsDao newsDao;
+    public NewsDao newsDao;
 
     public NewsServiceImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
     @Override
-    public String addUserDetails(String email, String country, String category){
-        return newsDao.addUserDetails(email,country,category);
+    public String addUserDetails(String email, String country, String category, List<String> sources){
+        return newsDao.addUserDetails(email,country,category,sources);
     }
 
     @Override
-    public List<Article> getNewsById(String id, String count) {
-        return newsDao.getNewsById(id, count);
+    public List<String> getNewsById(String id, String count,String from, String to) throws Exception {
+        return newsDao.getNewsById(id, count,from,to);
     }
+
+    @Override
+    public List<String> getSources(String id) {
+        return newsDao.getSources(id);
+    }
+
 }
