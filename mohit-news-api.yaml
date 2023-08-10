@@ -1,0 +1,96 @@
+format_version: 3
+pipelines:
+  mohit-news-api-build:
+    environment_variables:
+      APP_NAME: mohit-news-api
+      CLUSTER: <CLUSTER NAME>
+      ENVIRONMENT: build
+    group: Bootcamp
+    materials:
+      git:
+        branch: master
+        git: 'git@github.com:navi-bootcamp/mohit-news-api.git'
+        shallow_clone: true
+    stages:
+      - build:
+          fetch_materials: true
+          jobs:
+            build:
+              artifacts:
+                - build:
+                    destination: ''
+                    source: image_version
+              elastic_profile_id: prod-default
+              tasks:
+                - exec:
+                    arguments:
+                      - '-c'
+                      - docker-build mohit-news-api
+                    command: bash
+                    run_if: passed
+              timeout: 0
+  mohit-news-api-dev-migrate-deploy:
+    environment_variables:
+      APP_NAME: mohit-news-api
+      CLUSTER: <CLUSTER NAME>
+      ENVIRONMENT: dev
+    group: Bootcamp
+    materials:
+      code:
+        pipeline: mohit-news-api-build
+        stage: build
+      git:
+        branch: master
+        git: 'git@github.com:navi-bootcamp/mohit-news-api.git'
+        shallow_clone: true
+    stages:
+      - migration:
+          approval:
+            allow_only_on_success: false
+            type: success
+          fetch_materials: true
+          jobs:
+            migration:
+              elastic_profile_id: prod-default
+              tasks:
+                - fetch:
+                    destination: deployment
+                    is_file: true
+                    job: build
+                    pipeline: mohit-news-api-build
+                    run_if: passed
+                    source: image_version
+                    stage: build
+                - script: |2-
+                     cd deployment 
+                     . fetch_config_portal 
+                     eval $(aws ecr get-login --no-include-email --region ap-south-1 --registry-id 193044292705)
+                     docker run -w /usr/local \ 
+                     -e DATASOURCE_URL=${DATASOURCE_URL} -e DATASOURCE_USERNAME=${DATASOURCE_USERNAME} \ 
+                     -e DATASOURCE_PASSWORD=${DATASOURCE_PASSWORD} `cat image_version` java -jar database.jar
+      - deploy:
+          approval:
+            allow_only_on_success: false
+            type: success
+          fetch_materials: true
+          jobs:
+            deploy:
+              elastic_profile_id: nonprod-infra
+              tasks:
+                - fetch:
+                    destination: deployment
+                    is_file: true
+                    job: build
+                    pipeline: mohit-news-api-build
+                    run_if: passed
+                    source: image_version
+                    stage: build
+                - exec:
+                    arguments:
+                      - '-c'
+                      - 'portal_deploy ${ENVIRONMENT} `cat image_version`'
+                    command: bash
+                    run_if: passed
+                    working_directory: deployment
+              timeout: 0
+
