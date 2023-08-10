@@ -2,21 +2,18 @@ package com.navi.mynewsservice.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.navi.mynewsservice.Contract.request.User;
-import com.navi.mynewsservice.dao.NewsDao;
 import com.navi.mynewsservice.entity.Article;
 import com.navi.mynewsservice.entity.NewsResponse;
 import com.navi.mynewsservice.entity.Source;
 import com.navi.mynewsservice.entity.Sources;
 import com.navi.mynewsservice.exception.CategoryNotFoundException;
-import com.navi.mynewsservice.exception.InvalidDataException;
+import com.navi.mynewsservice.exception.InvalidDateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import javax.sound.midi.InvalidMidiDataException;
 import java.util.ArrayList;
 import java.util.List;
 @Service
@@ -67,7 +64,7 @@ public class FetchService {
 
         if(from != null){
             if(validateService.validateDate(from)) {
-                throw new InvalidDataException("News can't be shown before 30 days");
+                throw new InvalidDateException("News can't be shown before 30 days");
             }
             else url = url + "&from=" + from;
         }

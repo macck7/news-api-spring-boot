@@ -53,6 +53,4 @@ public boolean addUserDetails(String email,
 }
 
 
-
-
 }
