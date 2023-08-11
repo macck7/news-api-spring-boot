@@ -8,6 +8,5 @@ import javax.persistence.Entity;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Article {
-
         private String title;
 }

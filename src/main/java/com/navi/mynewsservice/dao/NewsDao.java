@@ -1,5 +1,9 @@
 package com.navi.mynewsservice.dao;
 import com.navi.mynewsservice.Contract.request.User;
+import com.navi.mynewsservice.dao.repo.SourceRepo;
+import com.navi.mynewsservice.dao.repo.UserRepo;
+import com.navi.mynewsservice.dao.schema.SourceDetails;
+import com.navi.mynewsservice.dao.schema.UserDetails;
 import com.navi.mynewsservice.entity.Article;
 import com.navi.mynewsservice.service.impl.AddUserService;
 import com.navi.mynewsservice.service.impl.FetchService;
@@ -20,27 +24,68 @@ public class NewsDao {
         userDetails = new HashMap<>();
     }
 
-    @Autowired
-    private FetchService fetchService;
-    @Autowired
-    private AddUserService addUserService;
+//    @Autowired
+//    private FetchService fetchService;
+//    @Autowired
+//    private AddUserService addUserService;
 
 
-    public String addUserDetails(String email, String country, String category, List<String> sources) {
-        try{
-            if(addUserService.addUserDetails(email,country,category,sources)){
-                userSet.add(email);
-                userDetails.put(email,new User(email,country,category,sources));
+    private
+
+    @Autowired
+    UserRepo userRepo;
+
+    @Autowired
+    SourceRepo sourceRepo;
+
+
+    public String addUserDetails(String email, String country, String category, List<String> sourceNames) {
+        try {
+            UserDetails existingUser = userRepo.findByEmail(email);
+
+            if (existingUser != null) {
+                // User already exists, update their details
+                existingUser.setCountry(country);
+                existingUser.setCategory(category);
+
+                // Update the user's sources
+                List<SourceDetails> sources = new ArrayList<>();
+                for (String sourceName : sourceNames) {
+                    SourceDetails existingSource = sourceRepo.findByName(sourceName);
+                    if (existingSource == null) {
+                        existingSource = new SourceDetails(sourceName);
+                        sourceRepo.save(existingSource);
+                    }
+                    sources.add(existingSource);
+                }
+                existingUser.setSources(sources);
+
+                userRepo.save(existingUser);
+
+                return "User details updated";
+            } else {
+                // User doesn't exist, create a new user
+                List<SourceDetails> sources = new ArrayList<>();
+                for (String sourceName : sourceNames) {
+                    SourceDetails existingSource = sourceRepo.findByName(sourceName);
+                    if (existingSource == null) {
+                        existingSource = new SourceDetails(sourceName);
+                        sourceRepo.save(existingSource);
+                    }
+                    sources.add(existingSource);
+                }
+
+                UserDetails userDetails = new UserDetails(email, country, category, sources);
+                userRepo.save(userDetails);
+
                 return "User added successfully";
             }
-            else{
-                return "User already exists";
-            }
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return e.getMessage();
         }
     }
+
+
 
 
 
