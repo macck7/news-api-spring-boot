@@ -12,31 +12,28 @@ import org.springframework.stereotype.Repository;
 
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Repository
 public class NewsDao {
-    private Set<String>userSet;
-    private Map<String, User> userDetails;
-
-    public NewsDao(){
-        userSet = new HashSet<>();
-        userDetails = new HashMap<>();
-    }
-
-//    @Autowired
-//    private FetchService fetchService;
-//    @Autowired
-//    private AddUserService addUserService;
-
-
-    private
+//    private Set<String>userSet;
+//    private Map<String, User> userDetails;
+//
+//    public NewsDao(){
+//        userSet = new HashSet<>();
+//        userDetails = new HashMap<>();
+//    }
 
     @Autowired
-    UserRepo userRepo;
-
+    private FetchService fetchService;
     @Autowired
-    SourceRepo sourceRepo;
+    private AddUserService addUserService;
+    @Autowired
+    private UserRepo userRepo;
+    @Autowired
+    private SourceRepo sourceRepo;
+
 
 
     public String addUserDetails(String email, String country, String category, List<String> sourceNames) {
@@ -88,20 +85,45 @@ public class NewsDao {
 
 
 
+    public List<String> getNewsById(String id, String count, String from, String to) throws Exception {
+        UserDetails user = userRepo.findByEmail(id);
+        if (user == null) {
+            // Handle user not found scenario
+            return Collections.emptyList();
+        }
+        List<SourceDetails> sourceDetailsList = user.getSources();
+        List<String> sourceNames = sourceDetailsList.stream()
+                .map(SourceDetails::getName)
+                .collect(Collectors.toList());
 
-    public List<String> getNewsById(String id, String count,String from, String to) throws Exception {
-        User user = userDetails.get(id);
-        return fetchService.getNewsById(user.getCountry(),user.getCategory(),count,user.getSources(),from,to);
+        return fetchService.getNewsById(user.getCountry(), user.getCategory(), count,sourceNames, from, to);
     }
 
-    public List<String> getSources(String id) {
-        User user = userDetails.get(id);
-        return fetchService.getAllSources(
-                user.getCountry(),
-                user.getCategory());
+    public List<String> getSources(String email) {
+        UserDetails user = userRepo.findByEmail(email);
+        if (user == null) {
+            // Handle user not found scenario
+            return Collections.emptyList();
+        }
 
+        return fetchService.getAllSources(user.getCountry(), user.getCategory());
     }
 
 
+
+//    public List<String> getNewsById(String id, String count,String from, String to) throws Exception {
+//        User user = userDetails.get(id);
+//        return fetchService.getNewsById(user.getCountry(),user.getCategory(),count,user.getSources(),from,to);
+//    }
+//
+//    public List<String> getSources(String id) {
+//        User user = userDetails.get(id);
+//        return fetchService.getAllSources(
+//                user.getCountry(),
+//                user.getCategory());
+//
+//    }
+//
+//
 
 }

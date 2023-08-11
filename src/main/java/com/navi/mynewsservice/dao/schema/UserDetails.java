@@ -32,4 +32,6 @@ public class UserDetails {
                 this.category = category;
                 this.sources = sources;
         }
+
+
 }

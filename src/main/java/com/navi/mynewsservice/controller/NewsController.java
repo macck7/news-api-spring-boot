@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -16,34 +17,55 @@ import java.util.List;
 public class NewsController {
 
 
-//    @Autowired
-//    private NewsServiceImpl newsService;
-//
-//    @Autowired
-//    private ApiCallRecordRepo apiCallRecordRepo;
-//
-//    @PostMapping("/add-user")
-//    public ResponseEntity<?> addUserDetails(@RequestBody User user) {
-//        try {
-//            long startTime = System.currentTimeMillis();
-//            String response = newsService.addUserDetails(
-//                    user.getEmail(),
-//                    user.getCountry(),
-//                    user.getCategory(),
-//                    user.getSources());
-//            long endTime = System.currentTimeMillis();
-//            long tt = endTime - startTime;
-//
-//            apiCallRecordRepo.save(new ApiCallRecord("/add-user", "POST", response, tt));
-//
-//            return new ResponseEntity<>(response, HttpStatus.OK);
-//        } catch (Exception e) {
-//            Long tt = 0L;
-//            apiCallRecordRepo.save(new ApiCallRecord("/add-user", "POST", e.getMessage(), tt));
-//            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-//        }
-//    }
-//
+    @Autowired
+    private NewsServiceImpl newsService;
+
+    @Autowired
+    private ApiCallRecordRepo apiCallRecordRepo;
+
+    @PostMapping("/add-user")
+    public ResponseEntity<?> addUserDetails(@RequestBody User user) {
+        try {
+            long startTime = System.currentTimeMillis();
+            String response = newsService.addUserDetails(
+                    user.getEmail(),
+                    user.getCountry(),
+                    user.getCategory(),
+                    user.getSources());
+            long endTime = System.currentTimeMillis();
+            long tt = endTime - startTime;
+
+            apiCallRecordRepo.save(new ApiCallRecord("/add-user", "POST", response, tt));
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            Long tt = 0L;
+            apiCallRecordRepo.save(new ApiCallRecord("/add-user", "POST", e.getMessage(), tt));
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
+
+        @GetMapping("/news/{id}")
+    public List<String> getNewsById(@PathVariable String id,
+                                         @RequestParam(required = false) String count,
+                                         @RequestParam(required = false) String from,
+                                         @RequestParam(required = false) String to) {
+        try{
+            long startTime = System.currentTimeMillis();
+
+            long endTime = System.currentTimeMillis();
+            long tt = endTime - startTime;
+            List<String> rr = newsService.getNewsById(id, count,from,to);
+            apiCallRecordRepo.save(new ApiCallRecord("/news/" + id, "GET", "response", tt));
+            return rr;
+        }
+        catch(Exception e){
+            return new ArrayList<>();
+        }
+    }
+
 //
 //    @GetMapping("/news/{id}")
 //    public ResponseEntity<?> getNewsById(@PathVariable String id,
@@ -64,89 +86,89 @@ public class NewsController {
 //            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 //        }
 //    }
-//
-//    @GetMapping("/sources/{id}")
-//    public ResponseEntity<?> getSources(@PathVariable String id) {
-//        try {
-//            long startTime = System.currentTimeMillis();
-//            List<String> response = newsService.getSources(id);
-//
-//            long endTime = System.currentTimeMillis();
-//            long tt = endTime - startTime;
-//
-//            apiCallRecordRepo.save(new ApiCallRecord("/sources/" + id, "GET", response.toString(), tt));
-//            return new ResponseEntity<>(response, HttpStatus.OK);
-//        } catch (Exception e) {
-//            Long tt = 0L;
-//            apiCallRecordRepo.save(new ApiCallRecord("/sources/" + id, "GET", e.getMessage(), tt));
-//            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-//        }
-//    }
-//}
-//
-//
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    @Autowired
-    private NewsServiceImpl newsService;
-
-    @PostMapping ("/add-user")
-    public ResponseEntity<?> addUserDetails(@RequestBody User user) {
-        try{
-            return new ResponseEntity<>(
-                    newsService.addUserDetails(
-                            user.getEmail(),
-                            user.getCountry(),
-                            user.getCategory(),
-                            user.getSources()), HttpStatus.OK);
-        }
-        catch (Exception e){
-            return new ResponseEntity<>(
-                    e.getMessage(),
-                    HttpStatus.BAD_REQUEST);
-        }
-
-    }
-
-    @GetMapping("/news/{id}")
-    public ResponseEntity<?> getNewsById(@PathVariable String id,
-                                         @RequestParam(required = false) String count,
-                                         @RequestParam(required = false) String from,
-                                         @RequestParam(required = false) String to) {
-        try{
-            return new ResponseEntity<>(
-                    newsService.getNewsById(id, count,from,to),
-                    HttpStatus.OK);
-        }
-        catch(Exception e){
-            return new ResponseEntity<>(e.getMessage(),
-                    HttpStatus.BAD_REQUEST);
-        }
-    }
 
     @GetMapping("/sources/{id}")
-    public ResponseEntity<?> getNewsById(@PathVariable String id) {
-        try{
-            return new ResponseEntity<>(newsService.getSources(id),
-                    HttpStatus.OK);
-        }
-        catch(Exception e){
-            return new ResponseEntity<>(e.getMessage(),
-                    HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> getSources(@PathVariable String id) {
+        try {
+            long startTime = System.currentTimeMillis();
+            List<String> response = newsService.getSources(id);
+
+            long endTime = System.currentTimeMillis();
+            long tt = endTime - startTime;
+
+            apiCallRecordRepo.save(new ApiCallRecord("/sources/" + id, "GET", response.toString(), tt));
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            Long tt = 0L;
+            apiCallRecordRepo.save(new ApiCallRecord("/sources/" + id, "GET", e.getMessage(), tt));
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    @Autowired
+//    private NewsServiceImpl newsService;
+//
+//    @PostMapping ("/add-user")
+//    public ResponseEntity<?> addUserDetails(@RequestBody User user) {
+//        try{
+//            return new ResponseEntity<>(
+//                    newsService.addUserDetails(
+//                            user.getEmail(),
+//                            user.getCountry(),
+//                            user.getCategory(),
+//                            user.getSources()), HttpStatus.OK);
+//        }
+//        catch (Exception e){
+//            return new ResponseEntity<>(
+//                    e.getMessage(),
+//                    HttpStatus.BAD_REQUEST);
+//        }
+//
+//    }
+//
+//    @GetMapping("/news/{id}")
+//    public ResponseEntity<?> getNewsById(@PathVariable String id,
+//                                         @RequestParam(required = false) String count,
+//                                         @RequestParam(required = false) String from,
+//                                         @RequestParam(required = false) String to) {
+//        try{
+//            return new ResponseEntity<>(
+//                    newsService.getNewsById(id, count,from,to),
+//                    HttpStatus.OK);
+//        }
+//        catch(Exception e){
+//            return new ResponseEntity<>(e.getMessage(),
+//                    HttpStatus.BAD_REQUEST);
+//        }
+//    }
+//
+//    @GetMapping("/sources/{id}")
+//    public ResponseEntity<?> getNewsById(@PathVariable String id) {
+//        try{
+//            return new ResponseEntity<>(newsService.getSources(id),
+//                    HttpStatus.OK);
+//        }
+//        catch(Exception e){
+//            return new ResponseEntity<>(e.getMessage(),
+//                    HttpStatus.BAD_REQUEST);
+//        }
+//    }
+//
+//}
