@@ -1,8 +1,11 @@
 package com.navi.mynewsservice.controller;
 
 import com.navi.mynewsservice.Contract.request.User;
+import com.navi.mynewsservice.dao.RequestTypeCallCountDTO;
 import com.navi.mynewsservice.dao.repo.ApiCallRecordRepo;
 import com.navi.mynewsservice.dao.schema.ApiCallRecord;
+import com.navi.mynewsservice.dao.schema.ApiCallRecordDTO;
+import com.navi.mynewsservice.dao.schema.ApiCost;
 import com.navi.mynewsservice.service.impl.NewsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -58,7 +62,7 @@ public class NewsController {
             long endTime = System.currentTimeMillis();
             long tt = endTime - startTime;
             List<String> rr = newsService.getNewsById(id, count,from,to);
-            apiCallRecordRepo.save(new ApiCallRecord("/news/" + id, "GET", "response", tt));
+            apiCallRecordRepo.save(new ApiCallRecord("/news/" + id, "GET + id", "response", tt));
             return rr;
         }
         catch(Exception e){
@@ -96,14 +100,36 @@ public class NewsController {
             long endTime = System.currentTimeMillis();
             long tt = endTime - startTime;
 
-            apiCallRecordRepo.save(new ApiCallRecord("/sources/" + id, "GET", response.toString(), tt));
+            apiCallRecordRepo.save(new ApiCallRecord("/sources/" + id, "GET + source ", response.toString(), tt));
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             Long tt = 0L;
-            apiCallRecordRepo.save(new ApiCallRecord("/sources/" + id, "GET", e.getMessage(), tt));
+            apiCallRecordRepo.save(new ApiCallRecord("/sources/" + id, "GET + source", e.getMessage(), tt));
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
+    @PostMapping("/report")
+    public ResponseEntity<List<RequestTypeCallCountDTO>> report() {
+        List<RequestTypeCallCountDTO> queryResult = apiCallRecordRepo.findDistinctRequestTypesWithCallCountAndAvgTime();
+
+        List<RequestTypeCallCountDTO> response = queryResult.stream()
+                .collect(Collectors.toList());
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/bill")
+    public ResponseEntity<List<ApiCost>> cost() {
+        List<ApiCost> queryResult = apiCallRecordRepo.findDistinctRequestTypesWithCallCountAndAvgTimeAndCost();
+
+        List<ApiCost> response = queryResult.stream()
+                .collect(Collectors.toList());
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
 }
 
 
