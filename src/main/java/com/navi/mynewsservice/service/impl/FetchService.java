@@ -8,6 +8,8 @@ import com.navi.mynewsservice.entity.Source;
 import com.navi.mynewsservice.entity.Sources;
 import com.navi.mynewsservice.exception.CategoryNotFoundException;
 import com.navi.mynewsservice.exception.InvalidDateException;
+import com.navi.mynewsservice.model.schema.ApiCallRecord;
+import com.navi.mynewsservice.model.repo.ApiCallRecordRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +25,12 @@ public class FetchService {
     private RestTemplate restTemplate;
     @Autowired
     private ValidateService validateService;
+    @Autowired
+    private ApiCallRecordRepo apiCallRecordRepo;
 
     public  List<String> getAllSources(String country, String category) {
+
+        long startTime = System.currentTimeMillis();
         String apiUrl = "https://newsapi.org/v2/top-headlines/sources";
         String apiKey = "b46085f75a39489b88704fb9c9f7e4fc";
         String url = apiUrl + "?country=" + country + "&category=" + category + "&apiKey=" + apiKey;
@@ -48,6 +54,10 @@ public class FetchService {
                 JsonNode article = articlesArray.get(i);
                 articles.add(article.get("id").asText());
             }
+
+            long endTime = System.currentTimeMillis();
+            long tt = endTime - startTime;
+            apiCallRecordRepo.save(new ApiCallRecord("/sources", "GET ", response.toString(), tt));
             return articles;
 
         } catch (Exception e) {
@@ -58,36 +68,51 @@ public class FetchService {
 
 
     public List<String> getNewsById( String country,String category, String count, List<String> sources, String from, String to) throws Exception {
+        long startTime = System.currentTimeMillis();
         String apiUrl = "https://newsapi.org/v2/top-headlines";
         String apiKey = "b46085f75a39489b88704fb9c9f7e4fc";
         String url = apiUrl + "?country=" + country + "&category=" + category + "&apiKey=" + apiKey;
-
+        String endpoint = "/top-headlines";
         if(from != null){
             if(validateService.validateDate(from)) {
                 throw new InvalidDateException("News can't be shown before 30 days");
             }
             else url = url + "&from=" + from;
+            endpoint = endpoint+"/from";
         }
 
-        if(to != null)  url = url + "&to=" + to;
-        if(count != null) url = url + "&pageSize=" + Integer.parseInt(count);
+        if(to != null){
+            url = url + "&to=" + to;
+            endpoint = endpoint+"/to";
+        }
+        if(count != null){
+            url = url + "&pageSize=" + Integer.parseInt(count);
+            endpoint = endpoint+"/count";
+        }
 
         List<String> titles = new ArrayList<>();
+        int i=1;
         for(String source: sources) {
 
             ResponseEntity<NewsResponse> newsResponseEntity = restTemplate.exchange(
-                    url+"&source=" + source, HttpMethod.GET, null, NewsResponse.class);
+                    url + "&source=" + source, HttpMethod.GET, null, NewsResponse.class);
             NewsResponse newsResponse = newsResponseEntity.getBody();
             List<Article> articles = newsResponse.getArticles();
-            for(Article article: articles) {
+            for (Article article : articles) {
                 titles.add(article.getTitle());
             }
+            if (i == 1) {
+                endpoint = endpoint + "/source";
+                i = 0;
+            }
         }
-
         if(titles.size() == 0) {
             throw new CategoryNotFoundException("No articles found for the given country and category.");
         }
-        else return titles;
+        long endTime = System.currentTimeMillis();
+        long tt = endTime - startTime;
+        apiCallRecordRepo.save(new ApiCallRecord(endpoint, "GET ", "titles.toString()", tt));
+        return titles;
     }
 
 

@@ -1,4 +1,4 @@
-package com.navi.mynewsservice.dao;
+package com.navi.mynewsservice.model;
 
 import org.springframework.stereotype.Repository;
 

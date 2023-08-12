@@ -1,10 +1,8 @@
-package com.navi.mynewsservice.dao.repo;
+package com.navi.mynewsservice.model.repo;
 
-import com.navi.mynewsservice.dao.schema.UserDetails;
+import com.navi.mynewsservice.model.schema.UserDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import javax.persistence.Entity;
 
 @Repository
 public interface UserRepo extends JpaRepository<UserDetails, Integer> {

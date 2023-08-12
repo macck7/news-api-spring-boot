@@ -1,6 +1,6 @@
 package com.navi.mynewsservice.service.impl;
 
-import com.navi.mynewsservice.dao.UserDao;
+import com.navi.mynewsservice.model.UserDao;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,4 +1,4 @@
-package com.navi.mynewsservice.dao.schema;
+package com.navi.mynewsservice.model.schema;
 
 import lombok.Data;
 

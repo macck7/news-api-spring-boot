@@ -1,13 +1,14 @@
 package com.navi.mynewsservice.controller;
 
+import com.navi.mynewsservice.Contract.request.User;
+import com.navi.mynewsservice.model.repo.ApiCallRecordRepo;
+import com.navi.mynewsservice.model.schema.ApiCallRecord;
 import com.navi.mynewsservice.service.impl.NewsServiceImpl;
 import com.navi.mynewsservice.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -15,29 +16,56 @@ import java.util.List;
 public class UserController {
 
     @Autowired
-    private UserServiceImpl newsService;
+    private UserServiceImpl userService;
 
-    @GetMapping("/allcountry")
-    public ResponseEntity<?> getAllcountries(){
-        return new ResponseEntity<>(newsService.getAllCountries(), HttpStatus.OK);
+    @Autowired
+    private NewsServiceImpl newsService;
+
+    @Autowired
+    private ApiCallRecordRepo apiCallRecordRepo;
+
+    @PostMapping("/add-user")
+    public ResponseEntity<?> addUserDetails(@RequestBody User user) {
+        try {
+            long startTime = System.currentTimeMillis();
+            String response = newsService.addUserDetails(
+                    user.getEmail(),
+                    user.getCountry(),
+                    user.getCategory(),
+                    user.getSources());
+            long endTime = System.currentTimeMillis();
+            long tt = endTime - startTime;
+
+            apiCallRecordRepo.save(new ApiCallRecord("/add-user", "POST", response, tt));
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            Long tt = 0L;
+            apiCallRecordRepo.save(new ApiCallRecord("/add-user", "POST", e.getMessage(), tt));
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
 
+    @GetMapping("/allcountry")
+    public ResponseEntity<?> getAllcountries(){
+        return new ResponseEntity<>(userService.getAllCountries(), HttpStatus.OK);
+    }
 
     @GetMapping("/allcategory")
     public ResponseEntity<List<String>> getAllCategories(){
-        return new ResponseEntity<>( newsService.getAllCategories(),HttpStatus.OK);
+        return new ResponseEntity<>( userService.getAllCategories(),HttpStatus.OK);
     }
 
     @GetMapping("/addcountry")
     public ResponseEntity<?> addCountry(@RequestParam String country){
-        newsService.addCountry(country);
+        userService.addCountry(country);
         return new ResponseEntity<>("Country added successfully",HttpStatus.OK);
     }
 
     @GetMapping("/addcategory")
     public ResponseEntity<String> addCategory(@RequestParam String category){
-        newsService.addCategory(category);
+        userService.addCategory(category);
         return new ResponseEntity<>("Category added successfully",HttpStatus.OK);
     }
 }

@@ -1,7 +1,6 @@
-package com.navi.mynewsservice.dao.repo;
+package com.navi.mynewsservice.model.repo;
 
-import com.navi.mynewsservice.dao.schema.SourceDetails;
-import com.navi.mynewsservice.entity.Source;
+import com.navi.mynewsservice.model.schema.SourceDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 @Repository

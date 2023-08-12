@@ -1,6 +1,6 @@
 package com.navi.mynewsservice.service.impl;
 
-import com.navi.mynewsservice.dao.UserDao;
+import com.navi.mynewsservice.model.UserDao;
 import com.navi.mynewsservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
