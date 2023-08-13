@@ -57,7 +57,7 @@ public class FetchService {
 
             long endTime = System.currentTimeMillis();
             long tt = endTime - startTime;
-            apiCallRecordRepo.save(new ApiCallRecord("/sources", "GET ", response.toString(), tt));
+            apiCallRecordRepo.save(new ApiCallRecord("/sources", "GET ", "response.toString()", tt));
             return articles;
 
         } catch (Exception e) {
@@ -67,35 +67,42 @@ public class FetchService {
     }
 
 
-    public List<String> getNewsById( String country,String category, String count, List<String> sources, String from, String to) throws Exception {
+    public List<String> getNewsById(String country, String category, String count, List<String> sources, String from, String to) throws Exception {
         long startTime = System.currentTimeMillis();
         String apiUrl = "https://newsapi.org/v2/top-headlines";
         String apiKey = "b46085f75a39489b88704fb9c9f7e4fc";
-        String url = apiUrl + "?country=" + country + "&category=" + category + "&apiKey=" + apiKey;
+
+        StringBuilder urlBuilder = new StringBuilder(apiUrl)
+                .append("?country=").append(country)
+                .append("&category=").append(category)
+                .append("&apiKey=").append(apiKey);
+
         String endpoint = "/top-headlines";
-        if(from != null){
-            if(validateService.validateDate(from)) {
+        if (from != null) {
+            if (validateService.validateDate(from)) {
                 throw new InvalidDateException("News can't be shown before 30 days");
+            } else {
+                urlBuilder.append("&from=").append(from);
+                endpoint = endpoint + "/from";
             }
-            else url = url + "&from=" + from;
-            endpoint = endpoint+"/from";
         }
 
-        if(to != null){
-            url = url + "&to=" + to;
-            endpoint = endpoint+"/to";
+        if (to != null) {
+            urlBuilder.append("&to=").append(to);
+            endpoint = endpoint + "/to";
         }
-        if(count != null){
-            url = url + "&pageSize=" + Integer.parseInt(count);
-            endpoint = endpoint+"/count";
+
+        if (count != null) {
+            urlBuilder.append("&pageSize=").append(Integer.parseInt(count));
+            endpoint = endpoint + "/count";
         }
 
         List<String> titles = new ArrayList<>();
-        int i=1;
-        for(String source: sources) {
-
+        int i = 1;
+        for (String source : sources) {
+            String sourceUrl = urlBuilder.toString() + "&source=" + source;
             ResponseEntity<NewsResponse> newsResponseEntity = restTemplate.exchange(
-                    url + "&source=" + source, HttpMethod.GET, null, NewsResponse.class);
+                    sourceUrl, HttpMethod.GET, null, NewsResponse.class);
             NewsResponse newsResponse = newsResponseEntity.getBody();
             List<Article> articles = newsResponse.getArticles();
             for (Article article : articles) {
@@ -106,14 +113,17 @@ public class FetchService {
                 i = 0;
             }
         }
-        if(titles.size() == 0) {
+
+        if (titles.isEmpty()) {
             throw new CategoryNotFoundException("No articles found for the given country and category.");
         }
+
         long endTime = System.currentTimeMillis();
         long tt = endTime - startTime;
         apiCallRecordRepo.save(new ApiCallRecord(endpoint, "GET ", "titles.toString()", tt));
         return titles;
     }
+
 
 
 }
