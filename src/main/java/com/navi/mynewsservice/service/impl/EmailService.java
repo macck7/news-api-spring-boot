@@ -2,6 +2,8 @@ package com.navi.mynewsservice.service.impl;
 
 import com.navi.mynewsservice.Contract.request.User;
 import com.navi.mynewsservice.entity.EmailRequest;
+import com.navi.mynewsservice.model.repo.RequestCountRepository;
+import com.navi.mynewsservice.model.schema.RequestCount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -19,16 +21,29 @@ public class EmailService {
     @Autowired
     JavaMailSender javaMailSender;
 
-    public EmailRequest getHeadlines(String email){
+    @Autowired
+    RequestCountRepository requestCountRepository;
 
+    public EmailRequest getHeadlines(String email) {
         EmailRequest emailRequest = new EmailRequest();
         emailRequest.setTo(email);
         emailRequest.setSubject("Top headlines");
         emailRequest.setBody("Today's important headlines are as follows");
-        List<String> headlines =  fetchService.fetchNews(email);
+        List<String> headlines = fetchService.fetchNews(email);
         emailRequest.setNewsList(headlines);
+
+        RequestCount requestCount = requestCountRepository.findByEmail(email);
+        if (requestCount == null) {
+            requestCount = new RequestCount();
+            requestCount.setEmail(email);
+            requestCount.setCount(1);
+        } else {
+            requestCount.setCount(requestCount.getCount() + 1);
+        }
+        requestCountRepository.save(requestCount);
         return emailRequest;
     }
+
 
 
 
@@ -46,10 +61,24 @@ public class EmailService {
 
             javaMailSender.send(message);
 
-            message.setReplyTo("http://localhost:8080/process-response");
-            javaMailSender.send(message);
+            //message.setReplyTo("http://localhost:8080/process-response");
+           // javaMailSender.send(message);
             return "Email sent successfully!";
         }
 
+
+    public List<String> topUserWithMostApiRequest() {
+        List<Object[]> topUsersWithCounts = requestCountRepository.findTopUsersWithCounts();
+        List<String> topUsersStrings = new ArrayList<>();
+
+        for (Object[] result : topUsersWithCounts) {
+            String email = (String) result[0];
+            int count = (int) result[1];
+            String userString = email + " (" + count + " requests)";
+            topUsersStrings.add(userString);
+        }
+
+        return topUsersStrings;
+    }
 
 }

@@ -3,6 +3,7 @@ package com.navi.mynewsservice.controller;
 import com.navi.mynewsservice.entity.EmailRequest;
 import com.navi.mynewsservice.service.impl.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -18,8 +19,8 @@ public class EmailController {
     EmailService emailService;
 
     @PostMapping("/send-email/{id}")
-    public String sendEmail(@PathVariable String id) {
-
+    public ResponseEntity<?> sendEmail(@PathVariable String id) {
+    try{
         EmailRequest emailRequest = emailService.getHeadlines(id);
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(emailRequest.getTo());
@@ -33,6 +34,20 @@ public class EmailController {
         message.setText(bodyBuilder.toString());
 
         javaMailSender.send(message);
-        return "Email sent successfully!";
+        return new ResponseEntity<>("Email sent successfully", HttpStatus.OK);
+    }catch (Exception e){
+        return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
     }
+    }
+
+    @GetMapping("/top-user")
+    public ResponseEntity<?> topUserWithMostApiRequest(){
+        try {
+            return new ResponseEntity<>(emailService.topUserWithMostApiRequest(), HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
 }
