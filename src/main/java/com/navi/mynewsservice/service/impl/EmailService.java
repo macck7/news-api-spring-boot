@@ -33,16 +33,29 @@ public class EmailService {
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
-        message.setSubject("Top headlines");
+        message.setSubject("Top Headlines - Your Daily News Dose");
 
         StringBuilder bodyBuilder = new StringBuilder();
-        bodyBuilder.append("Today's important headlines are as follows").append("\n\n");
-        for (String str : headlines) { // <-- Added opening curly brace
-            bodyBuilder.append("- ").append(str).append("\n");
-        } // <-- Added closing curly brace
+        bodyBuilder.append("Hello,").append("\n\n");
+        bodyBuilder.append("Here are today's top headlines for you:").append("\n\n");
+
+        for (String headline : headlines) {
+            bodyBuilder.append("- ").append(headline).append("\n");
+        }
+
+        bodyBuilder.append("\n");
+        bodyBuilder.append("Stay informed with the latest news from around the world.").append("\n\n");
+
+        bodyBuilder.append("---").append("\n\n");
+        bodyBuilder.append("Subscription Update:").append("\n\n");
+        bodyBuilder.append("Thank you for subscribing to our Daily News Digest. You're currently receiving the latest headlines from your chosen category and country.").append("\n\n");
+        bodyBuilder.append("If you wish to unsubscribe, click here: [Unsubscribe Link]").append("\n\n");
+        bodyBuilder.append("If you enjoy our service, consider sharing it with your friends and family.").append("\n\n");
+        bodyBuilder.append("Best regards,\nThe Daily News Digest Team");
+
         message.setText(bodyBuilder.toString());
 
-        // for DB
+        // Update request count in the database
         RequestCount requestCount = requestCountRepository.findByEmail(email);
         if (requestCount == null) {
             requestCount = new RequestCount();
@@ -59,17 +72,36 @@ public class EmailService {
 
 
 
-        public String sendWelcomeMail(User user) {
+
+    public String sendWelcomeMail(User user) {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(user.getEmail());
             message.setSubject("Welcome to Our News Service");
 
-            StringBuilder bodyBuilder = new StringBuilder();
-            bodyBuilder.append("Welcome to Awsome News Site! We're thrilled to have you as part of our community. Get ready to stay updated on the latest news, trends, and stories from around the world.\n\n");
-            bodyBuilder.append("Would you like to subscribe to our newsletter and receive the latest news directly in your inbox?\n\n");
-            bodyBuilder.append("To subscribe, simply reply to this email with 'YES' in the subject line.");
+        StringBuilder bodyBuilder = new StringBuilder();
+        bodyBuilder.append("╔══════════════════════╗").append("\n");
+        bodyBuilder.append("║      Welcome!        ║").append("\n");
+        bodyBuilder.append("╚══════════════════════╝").append("\n\n");
 
-            message.setText(bodyBuilder.toString());
+        bodyBuilder.append("Dear User,").append("\n\n");
+        bodyBuilder.append("We're thrilled to welcome you to our service!").append("\n");
+        bodyBuilder.append("Stay up-to-date with the latest news and stories from around the world.").append("\n\n");
+
+        bodyBuilder.append("Here's a sneak peek at what you can expect:").append("\n");
+        bodyBuilder.append("╭──────────────────────────────────────────────────╮").append("\n");
+        bodyBuilder.append("│ 1. Daily curated headlines in your inbox         │").append("\n");
+        bodyBuilder.append("│ 2. Stay informed about the topics you love       │").append("\n");
+        bodyBuilder.append("│ 3. Engaging stories and insights                 │").append("\n");
+        bodyBuilder.append("╰──────────────────────────────────────────────────╯").append("\n\n");
+
+        bodyBuilder.append("Get ready to explore the world through our service!").append("\n\n");
+
+        bodyBuilder.append("If you have any questions or feedback, feel free to reach out to us.").append("\n\n");
+
+        bodyBuilder.append("Best regards,").append("\n");
+        bodyBuilder.append("The NewsDose Team").append("\n");
+
+        message.setText(bodyBuilder.toString());
             javaMailSender.send(message);
 
             return "Email sent successfully!";
