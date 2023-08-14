@@ -1,6 +1,5 @@
 package com.navi.mynewsservice.service.impl;
 
-import com.navi.mynewsservice.Contract.request.User;
 import com.navi.mynewsservice.exception.CategoryNotFoundException;
 import com.navi.mynewsservice.exception.IncorrectSourcesException;
 import com.navi.mynewsservice.exception.InvalidEmailIdException;
@@ -13,11 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class AddUserService {
