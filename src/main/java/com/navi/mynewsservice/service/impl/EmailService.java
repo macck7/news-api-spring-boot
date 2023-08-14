@@ -5,6 +5,8 @@ import com.navi.mynewsservice.entity.EmailRequest;
 import com.navi.mynewsservice.model.repo.RequestCountRepository;
 import com.navi.mynewsservice.model.schema.RequestCount;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -24,14 +26,21 @@ public class EmailService {
     @Autowired
     RequestCountRepository requestCountRepository;
 
-    public EmailRequest getHeadlines(String email) {
-        EmailRequest emailRequest = new EmailRequest();
-        emailRequest.setTo(email);
-        emailRequest.setSubject("Top headlines");
-        emailRequest.setBody("Today's important headlines are as follows");
+    public String getHeadlines(String email) {
         List<String> headlines = fetchService.fetchNews(email);
-        emailRequest.setNewsList(headlines);
 
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Top headlines");
+
+        StringBuilder bodyBuilder = new StringBuilder();
+        bodyBuilder.append("Today's important headlines are as follows").append("\n\n");
+        for (String str : headlines) { // <-- Added opening curly brace
+            bodyBuilder.append("- ").append(str).append("\n");
+        } // <-- Added closing curly brace
+        message.setText(bodyBuilder.toString());
+
+        // for DB
         RequestCount requestCount = requestCountRepository.findByEmail(email);
         if (requestCount == null) {
             requestCount = new RequestCount();
@@ -41,9 +50,10 @@ public class EmailService {
             requestCount.setCount(requestCount.getCount() + 1);
         }
         requestCountRepository.save(requestCount);
-        return emailRequest;
-    }
 
+        javaMailSender.send(message);
+        return "Email sent successfully";
+    }
 
 
 

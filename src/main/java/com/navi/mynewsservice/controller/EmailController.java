@@ -21,20 +21,7 @@ public class EmailController {
     @PostMapping("/send-email/{id}")
     public ResponseEntity<?> sendEmail(@PathVariable String id) {
     try{
-        EmailRequest emailRequest = emailService.getHeadlines(id);
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(emailRequest.getTo());
-        message.setSubject(emailRequest.getSubject());
-
-        StringBuilder bodyBuilder = new StringBuilder();
-        bodyBuilder.append(emailRequest.getBody()).append("\n\n");
-        for (String str : emailRequest.getNewsList()) {
-            bodyBuilder.append("- ").append(str).append("\n");
-        }
-        message.setText(bodyBuilder.toString());
-
-        javaMailSender.send(message);
-        return new ResponseEntity<>("Email sent successfully", HttpStatus.OK);
+        return new ResponseEntity<>(emailService.getHeadlines(id), HttpStatus.OK);
     }catch (Exception e){
         return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
     }
