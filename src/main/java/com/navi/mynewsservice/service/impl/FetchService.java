@@ -8,8 +8,10 @@ import com.navi.mynewsservice.entity.Source;
 import com.navi.mynewsservice.entity.Sources;
 import com.navi.mynewsservice.exception.CategoryNotFoundException;
 import com.navi.mynewsservice.exception.InvalidDateException;
+import com.navi.mynewsservice.model.repo.UserRepo;
 import com.navi.mynewsservice.model.schema.ApiCallRecord;
 import com.navi.mynewsservice.model.repo.ApiCallRecordRepo;
+import com.navi.mynewsservice.model.schema.UserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,9 @@ public class FetchService {
     private ValidateService validateService;
     @Autowired
     private ApiCallRecordRepo apiCallRecordRepo;
+
+    @Autowired
+    private UserRepo userRepo;
 
     public  List<String> getAllSources(String country, String category) {
 
@@ -124,6 +129,30 @@ public class FetchService {
         return titles;
     }
 
+    public List<String> fetchNews(String id) {
+        UserDetails user = userRepo.findByEmail(id);
+        String apiUrl = "https://newsapi.org/v2/top-headlines";
+        String apiKey = "b46085f75a39489b88704fb9c9f7e4fc";
+
+        StringBuilder urlBuilder = new StringBuilder(apiUrl)
+                .append("?country=").append(user.getCountry())
+                .append("&category=").append(user.getCategory())
+                .append("&apiKey=").append(apiKey);
+
+        List<String> titles = new ArrayList<>();
+
+        ResponseEntity<NewsResponse> newsResponseEntity = restTemplate.exchange(urlBuilder.toString(), HttpMethod.GET, null, NewsResponse.class);
+        NewsResponse newsResponse = newsResponseEntity.getBody();
+        List<Article> articles = newsResponse.getArticles();
+        for (Article article : articles) {
+            titles.add(article.getTitle());
+        }
+
+        if (titles.isEmpty()) {
+            throw new CategoryNotFoundException("No articles found for the given country and category.");
+        }
+        return titles;
+    }
 
 
 }

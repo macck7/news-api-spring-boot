@@ -37,7 +37,7 @@ public String addUserDetails(String email,
                               List<String> sourceNames ){
 
                 if(!validateService.validateEmail(email)) throw new
-                        InvalidEmailIdException("Invalid Email Id");
+                        InvalidEmailIdException("Invalid EmailRequest Id");
                 if(!validateService.validateCountry(country)) throw new
                         CategoryNotFoundException("Country Not Found, " +
                         "Please write country code in small letters");

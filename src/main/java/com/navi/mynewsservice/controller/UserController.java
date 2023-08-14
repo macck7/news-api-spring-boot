@@ -3,6 +3,7 @@ package com.navi.mynewsservice.controller;
 import com.navi.mynewsservice.Contract.request.User;
 import com.navi.mynewsservice.model.repo.ApiCallRecordRepo;
 import com.navi.mynewsservice.model.schema.ApiCallRecord;
+import com.navi.mynewsservice.service.impl.EmailService;
 import com.navi.mynewsservice.service.impl.NewsServiceImpl;
 import com.navi.mynewsservice.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class UserController {
     @Autowired
     private ApiCallRecordRepo apiCallRecordRepo;
 
+    @Autowired
+    EmailService emailService;
+
     @PostMapping("/add-user")
     public ResponseEntity<?> addUserDetails(@RequestBody User user) {
         try {
@@ -37,7 +41,7 @@ public class UserController {
             long tt = endTime - startTime;
 
             apiCallRecordRepo.save(new ApiCallRecord("/add-user", "POST", response, tt));
-
+            emailService.sendWelcomeMail(user);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             Long tt = 0L;
