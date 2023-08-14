@@ -1,11 +1,9 @@
 package com.navi.mynewsservice.controller;
 
-import com.navi.mynewsservice.entity.EmailRequest;
 import com.navi.mynewsservice.service.impl.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,5 +34,24 @@ public class EmailController {
         }
     }
 
+
+    @PostMapping("/subscribe/{email}")
+    public String isSubscribed(@PathVariable String email ){
+        try {
+            String response =  emailService.addToScriberList(email);
+            return response;
+        }catch (Exception e){
+            return e.getMessage();
+        }
+    }
+
+    @DeleteMapping("/unsubscribe/{email}")
+    public String unsubscribe(@PathVariable String email){
+        try {
+            return emailService.removeToScriberList(email);
+        }catch (Exception e){
+            return e.getMessage();
+        }
+    }
 
 }

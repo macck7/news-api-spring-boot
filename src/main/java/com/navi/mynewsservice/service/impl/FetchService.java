@@ -8,9 +8,12 @@ import com.navi.mynewsservice.entity.Source;
 import com.navi.mynewsservice.entity.Sources;
 import com.navi.mynewsservice.exception.CategoryNotFoundException;
 import com.navi.mynewsservice.exception.InvalidDateException;
+import com.navi.mynewsservice.model.repo.NewsDataRepository;
 import com.navi.mynewsservice.model.repo.UserRepo;
 import com.navi.mynewsservice.model.schema.ApiCallRecord;
 import com.navi.mynewsservice.model.repo.ApiCallRecordRepo;
+import com.navi.mynewsservice.model.schema.News;
+import com.navi.mynewsservice.model.schema.NewsData;
 import com.navi.mynewsservice.model.schema.UserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -32,6 +35,10 @@ public class FetchService {
 
     @Autowired
     private UserRepo userRepo;
+
+    @Autowired
+    NewsDataRepository newsDataRepository;
+
 
     public  List<String> getAllSources(String country, String category) {
 
@@ -70,6 +77,7 @@ public class FetchService {
         }
         return null;
     }
+
 
 
     public List<String> getNewsById(String country, String category, String count, List<String> sources, String from, String to) throws Exception {
@@ -129,33 +137,50 @@ public class FetchService {
         return titles;
     }
 
+
+
     public List<String> fetchNews(String id) {
         UserDetails user = userRepo.findByEmail(id);
-        String apiUrl = "https://newsapi.org/v2/top-headlines";
-        String apiKey = "b46085f75a39489b88704fb9c9f7e4fc";
+        NewsData newsData = newsDataRepository.findByCountryAndCategory(user.getCountry(), user.getCategory());
 
-        StringBuilder urlBuilder = new StringBuilder(apiUrl)
-                .append("?country=").append(user.getCountry())
-                .append("&category=").append(user.getCategory())
-                .append("&apiKey=").append(apiKey);
+        if(newsData != null) {
+            List<News> newsList =  newsData.getNews();
+            List<String> titles = new ArrayList<>();
 
-        List<String> titles = new ArrayList<>();
-
-        ResponseEntity<NewsResponse> newsResponseEntity = restTemplate.exchange(urlBuilder.toString(), HttpMethod.GET, null, NewsResponse.class);
-        NewsResponse newsResponse = newsResponseEntity.getBody();
-        List<Article> articles = newsResponse.getArticles();
-        for (Article article : articles) {
-            titles.add(article.getTitle());
+            for (News news : newsList) {
+                titles.add(news.getTitle());
+            }
+            return titles;
         }
+        else {
 
-        if (titles.isEmpty()) {
-            throw new CategoryNotFoundException("No articles found for the given country and category.");
+            String apiUrl = "https://newsapi.org/v2/top-headlines";
+            String apiKey = "b46085f75a39489b88704fb9c9f7e4fc";
+
+            StringBuilder urlBuilder = new StringBuilder(apiUrl)
+                    .append("?country=").append(user.getCountry())
+                    .append("&category=").append(user.getCategory())
+                    .append("&apiKey=").append(apiKey);
+
+            List<String> titles = new ArrayList<>();
+
+            ResponseEntity<NewsResponse> newsResponseEntity = restTemplate.exchange(urlBuilder.toString(), HttpMethod.GET, null, NewsResponse.class);
+            NewsResponse newsResponse = newsResponseEntity.getBody();
+
+            List<Article> articles = newsResponse.getArticles();
+            List<News> newsList = new ArrayList<>();
+            for (Article article : articles) {
+                titles.add(article.getTitle());
+                newsList.add(new News(article.getTitle()));
+            }
+
+            newsData = new NewsData();
+            newsData.setCountry(user.getCountry());
+            newsData.setCategory(user.getCategory());
+            newsData.setNews(newsList);
+            newsDataRepository.save(newsData);
+            return titles;
         }
-        return titles;
     }
-
-
 }
-
-
 

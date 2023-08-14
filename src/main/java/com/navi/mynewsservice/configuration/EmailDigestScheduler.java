@@ -1,6 +1,8 @@
 package com.navi.mynewsservice.configuration;
 
 import com.navi.mynewsservice.Contract.request.User;
+import com.navi.mynewsservice.model.repo.SubscriberRepository;
+import com.navi.mynewsservice.model.schema.Subscriber;
 import com.navi.mynewsservice.service.impl.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -16,15 +18,16 @@ public class EmailDigestScheduler {
     @Autowired
     private EmailService emailService;
 
-//    @Autowired
-//    private UserService userService;
+    @Autowired
+    private SubscriberRepository subscriberRepository;
+
 
     @Scheduled(cron = "0 0 9 * * ?") // Run daily at 9:00 AM
     public void sendEmailDigests() {
         //List<User> subscribedUsers = userService.getSubscribedUsers(); // Get subscribed users
-        List<User> subscribedUsers = new ArrayList<>();
+        List<Subscriber> subscribedUsers = subscriberRepository.findAll();
 
-        for (User user : subscribedUsers) {
+        for (Subscriber user : subscribedUsers) {
             emailService.getHeadlines(user.getEmail()); // Send email digest to each user
         }
     }

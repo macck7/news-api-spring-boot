@@ -3,7 +3,9 @@ package com.navi.mynewsservice.service.impl;
 import com.navi.mynewsservice.Contract.request.User;
 import com.navi.mynewsservice.entity.EmailRequest;
 import com.navi.mynewsservice.model.repo.RequestCountRepository;
+import com.navi.mynewsservice.model.repo.SubscriberRepository;
 import com.navi.mynewsservice.model.schema.RequestCount;
+import com.navi.mynewsservice.model.schema.Subscriber;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,11 +70,8 @@ public class EmailService {
             bodyBuilder.append("To subscribe, simply reply to this email with 'YES' in the subject line.");
 
             message.setText(bodyBuilder.toString());
-
             javaMailSender.send(message);
 
-            //message.setReplyTo("http://localhost:8080/process-response");
-           // javaMailSender.send(message);
             return "Email sent successfully!";
         }
 
@@ -91,4 +90,27 @@ public class EmailService {
         return topUsersStrings;
     }
 
+    @Autowired
+    SubscriberRepository subscriberRepository;
+
+    public String addToScriberList(String email) {
+        Subscriber existingSubscriber = subscriberRepository.findByEmail(email);
+
+        if (existingSubscriber != null) {
+            return "Subscriber already exists.";
+        }
+        Subscriber newSubscriber = new Subscriber();
+        newSubscriber.setEmail(email);
+        subscriberRepository.save(newSubscriber);
+        return "Subscriber added successfully.";
+    }
+
+    public String removeToScriberList(String email) {
+        Subscriber existingSubscriber = subscriberRepository.findByEmail(email);
+        if (existingSubscriber == null) {
+            return "Subscriber not found.";
+        }
+        subscriberRepository.delete(existingSubscriber);
+        return "Subscriber removed successfully.";
+    }
 }
