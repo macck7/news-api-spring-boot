@@ -5,7 +5,6 @@ import com.navi.mynewsservice.exception.InvalidDateException;
 import com.navi.mynewsservice.model.repo.ApiCallRecordRepo;
 import com.navi.mynewsservice.model.repo.NewsDataRepository;
 import com.navi.mynewsservice.model.repo.UserRepo;
-import com.navi.mynewsservice.model.schema.ApiCallRecord;
 import com.navi.mynewsservice.model.schema.News;
 import com.navi.mynewsservice.model.schema.NewsData;
 import com.navi.mynewsservice.model.schema.UserDetails;
@@ -22,8 +21,9 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 class FetchServiceTest {
 
@@ -91,6 +91,8 @@ class FetchServiceTest {
         assertThrows(InvalidDateException.class,
                 () -> fetchService.getNewsById(country, category, count, sources, from, null));
     }
+
+
 
     @Test
     void testFetchNews() {

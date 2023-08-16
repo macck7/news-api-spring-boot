@@ -17,7 +17,7 @@ public class NewsData {
     String country;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "newsData")
-    private List<News> news;
+    private List<News> newsList;
 
     public NewsData() {
     }

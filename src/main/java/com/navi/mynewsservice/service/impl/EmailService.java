@@ -11,8 +11,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
 
+import javax.mail.internet.MimeMessage;
+import javax.naming.Context;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,81 +35,120 @@ public class EmailService {
     public String getHeadlines(String email) {
         List<String> headlines = fetchService.fetchNews(email);
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Top Headlines - Your Daily News Dose");
+        MimeMessage message = javaMailSender.createMimeMessage();
 
-        StringBuilder bodyBuilder = new StringBuilder();
-        bodyBuilder.append("Hello,").append("\n\n");
-        bodyBuilder.append("Here are today's top headlines for you:").append("\n\n");
+        try {
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(email);
+            helper.setSubject("Top Headlines - Your Daily News Dose");
 
-        for (String headline : headlines) {
-            bodyBuilder.append("- ").append(headline).append("\n");
+            StringBuilder bodyBuilder = new StringBuilder();
+            bodyBuilder.append("<html><body>");
+            bodyBuilder.append("<h2>Hello,</h2>");
+            bodyBuilder.append("<p>Here are today's top headlines for you:</p>");
+
+            for (int i = 0; i < headlines.size(); i++) {
+                String headline = headlines.get(i);
+                String color = (i % 2 == 0) ? "#f2f2f2" : "#e6e6e6"; // Alternate colors for text boxes
+
+                bodyBuilder.append("<div style=\"background-color:").append(color).append("; padding: 10px; margin-bottom: 10px;\">");
+                bodyBuilder.append("<p>").append(headline).append("</p>");
+                bodyBuilder.append("</div>");
+            }
+
+            bodyBuilder.append("<p>Stay informed with the latest news from around the world.</p>");
+            bodyBuilder.append("<hr>");
+
+            bodyBuilder.append("<h3>Subscription Update:</h3>");
+            bodyBuilder.append("<p>Thank you for subscribing to our Daily News Digest. You're currently receiving the latest headlines from your chosen category and country.</p>");
+            bodyBuilder.append("<p>If you wish to unsubscribe, <a href=\"[Unsubscribe Link]\">click here</a>.</p>");
+            bodyBuilder.append("<p>If you enjoy our service, consider sharing it with your friends and family.</p>");
+
+            bodyBuilder.append("<p>Best regards,<br>The Daily News Digest Team</p>");
+            bodyBuilder.append("</body></html>");
+
+            helper.setText(bodyBuilder.toString(), true); // Set the email as HTML
+
+            // Update request count in the database
+            RequestCount requestCount = requestCountRepository.findByEmail(email);
+            if (requestCount == null) {
+                requestCount = new RequestCount();
+                requestCount.setEmail(email);
+                requestCount.setCount(1);
+            } else {
+                requestCount.setCount(requestCount.getCount() + 1);
+            }
+            requestCountRepository.save(requestCount);
+
+            javaMailSender.send(message);
+            return "Email sent successfully";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Email sending failed";
         }
-
-        bodyBuilder.append("\n");
-        bodyBuilder.append("Stay informed with the latest news from around the world.").append("\n\n");
-
-        bodyBuilder.append("---").append("\n\n");
-        bodyBuilder.append("Subscription Update:").append("\n\n");
-        bodyBuilder.append("Thank you for subscribing to our Daily News Digest. You're currently receiving the latest headlines from your chosen category and country.").append("\n\n");
-        bodyBuilder.append("If you wish to unsubscribe, click here: [Unsubscribe Link]").append("\n\n");
-        bodyBuilder.append("If you enjoy our service, consider sharing it with your friends and family.").append("\n\n");
-        bodyBuilder.append("Best regards,\nThe Daily News Digest Team");
-
-        message.setText(bodyBuilder.toString());
-
-        // Update request count in the database
-        RequestCount requestCount = requestCountRepository.findByEmail(email);
-        if (requestCount == null) {
-            requestCount = new RequestCount();
-            requestCount.setEmail(email);
-            requestCount.setCount(1);
-        } else {
-            requestCount.setCount(requestCount.getCount() + 1);
-        }
-        requestCountRepository.save(requestCount);
-
-        javaMailSender.send(message);
-        return "Email sent successfully";
     }
 
 
 
 
+
     public String sendWelcomeMail(User user) {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(user.getEmail());
-            message.setSubject("Welcome to Our News Service");
 
-        StringBuilder bodyBuilder = new StringBuilder();
-        bodyBuilder.append("╔══════════════════════╗").append("\n");
-        bodyBuilder.append("║      Welcome!        ║").append("\n");
-        bodyBuilder.append("╚══════════════════════╝").append("\n\n");
+        try {
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(user.getEmail());
+            helper.setSubject("Welcome to Our News Service");
 
-        bodyBuilder.append("Dear User,").append("\n\n");
-        bodyBuilder.append("We're thrilled to welcome you to our service!").append("\n");
-        bodyBuilder.append("Stay up-to-date with the latest news and stories from around the world.").append("\n\n");
+            StringBuilder htmlContentBuilder = new StringBuilder();
+            htmlContentBuilder.append("<!DOCTYPE html>\n");
+            htmlContentBuilder.append("<html>\n<head>\n<style>\n");
+            htmlContentBuilder.append("body {\n");
+            htmlContentBuilder.append("    font-family: Arial, sans-serif;\n");
+            htmlContentBuilder.append("    background-color: #f5f5f5;\n");
+            htmlContentBuilder.append("    margin: 0;\n");
+            htmlContentBuilder.append("    padding: 0;\n");
+            htmlContentBuilder.append("}\n");
+            htmlContentBuilder.append(".container {\n");
+            htmlContentBuilder.append("    background-color: white;\n");
+            htmlContentBuilder.append("    border-radius: 10px;\n");
+            htmlContentBuilder.append("    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);\n");
+            htmlContentBuilder.append("    padding: 30px;\n");
+            htmlContentBuilder.append("    margin: 50px auto;\n");
+            htmlContentBuilder.append("    max-width: 600px;\n");
+            htmlContentBuilder.append("}\n");
+            htmlContentBuilder.append(".header {\n");
+            htmlContentBuilder.append("    color: #3498db;\n");
+            htmlContentBuilder.append("    font-size: 24px;\n");
+            htmlContentBuilder.append("    text-align: center;\n");
+            htmlContentBuilder.append("    margin-bottom: 20px;\n");
+            htmlContentBuilder.append("}\n");
+            htmlContentBuilder.append(".intro {\n");
+            htmlContentBuilder.append("    font-size: 18px;\n");
+            htmlContentBuilder.append("    margin-bottom: 20px;\n");
+            htmlContentBuilder.append("}\n");
+            htmlContentBuilder.append("</style>\n</head>\n<body>\n");
+            htmlContentBuilder.append("<div class=\"container\">\n");
+            htmlContentBuilder.append("<h2 class=\"header\">Welcome to Our News Service</h2>\n");
+            htmlContentBuilder.append("<p class=\"intro\">Dear User,</p>\n");
+            htmlContentBuilder.append("<p>We're thrilled to welcome you to our service! Stay up-to-date with the latest news and stories from around the world.</p>\n");
+            htmlContentBuilder.append("<p class=\"intro\">Get ready to explore the world through our service!</p>\n");
+            htmlContentBuilder.append("<p>If you have any questions or feedback, feel free to reach out to us.</p>\n");
+            htmlContentBuilder.append("<div class=\"footer\">\n");
+            htmlContentBuilder.append("<p>Best regards,<br>The NewsDose Team</p>\n");
+            htmlContentBuilder.append("</div>\n</div>\n</body>\n</html>");
 
-        bodyBuilder.append("Here's a sneak peek at what you can expect:").append("\n");
-        bodyBuilder.append("╭──────────────────────────────────────────────────╮").append("\n");
-        bodyBuilder.append("│ 1. Daily curated headlines in your inbox         │").append("\n");
-        bodyBuilder.append("│ 2. Stay informed about the topics you love       │").append("\n");
-        bodyBuilder.append("│ 3. Engaging stories and insights                 │").append("\n");
-        bodyBuilder.append("╰──────────────────────────────────────────────────╯").append("\n\n");
+            helper.setText(htmlContentBuilder.toString(), true); // Set HTML content
 
-        bodyBuilder.append("Get ready to explore the world through our service!").append("\n\n");
-
-        bodyBuilder.append("If you have any questions or feedback, feel free to reach out to us.").append("\n\n");
-
-        bodyBuilder.append("Best regards,").append("\n");
-        bodyBuilder.append("The NewsDose Team").append("\n");
-
-        message.setText(bodyBuilder.toString());
             javaMailSender.send(message);
 
             return "Email sent successfully!";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Failed to send email.";
         }
+    }
+
 
 
     public List<String> topUserWithMostApiRequest() {

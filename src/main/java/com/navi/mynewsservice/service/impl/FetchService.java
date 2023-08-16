@@ -138,22 +138,22 @@ public class FetchService {
     }
 
 
-
+    int i=0;
     public List<String> fetchNews(String id) {
         UserDetails user = userRepo.findByEmail(id);
         NewsData newsData = newsDataRepository.findByCountryAndCategory(user.getCountry(), user.getCategory());
-
-        if(newsData != null) {
-            List<News> newsList =  newsData.getNews();
+       // System.out.println(newsData.getNewsList().size());
+        if (newsData != null && newsData.getNewsList() != null && !newsData.getNewsList().isEmpty()) {
+            List<News> newsList = newsData.getNewsList();
             List<String> titles = new ArrayList<>();
 
             for (News news : newsList) {
                 titles.add(news.getTitle());
             }
             return titles;
-        }
-        else {
-
+        } else {
+            System.out.println(i);
+            i++;
             String apiUrl = "https://newsapi.org/v2/top-headlines";
             String apiKey = "b46085f75a39489b88704fb9c9f7e4fc";
 
@@ -167,20 +167,29 @@ public class FetchService {
             ResponseEntity<NewsResponse> newsResponseEntity = restTemplate.exchange(urlBuilder.toString(), HttpMethod.GET, null, NewsResponse.class);
             NewsResponse newsResponse = newsResponseEntity.getBody();
 
-            List<Article> articles = newsResponse.getArticles();
-            List<News> newsList = new ArrayList<>();
-            for (Article article : articles) {
-                titles.add(article.getTitle());
-                newsList.add(new News(article.getTitle()));
+            if (newsResponse != null && newsResponse.getArticles() != null) {
+                List<Article> articles = newsResponse.getArticles();
+                List<News> newsList = new ArrayList<>();
+                for (Article article : articles) {
+                    titles.add(article.getTitle());
+                    newsList.add(new News(article.getTitle()));
+                }
+
+                newsData = new NewsData();
+                newsData.setCountry(user.getCountry());
+                newsData.setCategory(user.getCategory());
+                newsData.setNewsList(newsList);
+
+                for (News news : newsList) {
+                    news.setNewsData(newsData);
+                }
+
+                newsDataRepository.save(newsData);
             }
 
-            newsData = new NewsData();
-            newsData.setCountry(user.getCountry());
-            newsData.setCategory(user.getCategory());
-            newsData.setNews(newsList);
-            newsDataRepository.save(newsData);
             return titles;
         }
     }
+
 }
 

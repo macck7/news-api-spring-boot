@@ -9,7 +9,7 @@ import javax.persistence.*;
 @Table(name = "news")
 public class News {
     @Id
-    @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
     String title;
 
