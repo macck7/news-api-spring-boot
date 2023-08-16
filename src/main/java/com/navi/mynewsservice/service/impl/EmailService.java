@@ -1,22 +1,16 @@
 package com.navi.mynewsservice.service.impl;
 
 import com.navi.mynewsservice.Contract.request.User;
-import com.navi.mynewsservice.entity.EmailRequest;
 import com.navi.mynewsservice.model.repo.RequestCountRepository;
 import com.navi.mynewsservice.model.repo.SubscriberRepository;
 import com.navi.mynewsservice.model.schema.RequestCount;
 import com.navi.mynewsservice.model.schema.Subscriber;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.TemplateEngine;
 
 import javax.mail.internet.MimeMessage;
-import javax.naming.Context;
 import java.util.ArrayList;
 import java.util.List;
 

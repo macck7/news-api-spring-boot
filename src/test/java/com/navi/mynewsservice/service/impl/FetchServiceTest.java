@@ -109,7 +109,7 @@ class FetchServiceTest {
         NewsData newsData = new NewsData();
         newsData.setCountry(userDetails.getCountry());
         newsData.setCategory(userDetails.getCategory());
-        newsData.setNews(newsList);
+        newsData.setNewsList(newsList);
 
         when(userRepo.findByEmail(userEmail)).thenReturn(userDetails);
         when(newsDataRepository.findByCountryAndCategory(userDetails.getCountry(), userDetails.getCategory())).thenReturn(newsData);

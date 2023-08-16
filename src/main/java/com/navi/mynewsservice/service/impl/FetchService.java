@@ -39,6 +39,11 @@ public class FetchService {
     @Autowired
     NewsDataRepository newsDataRepository;
 
+    @Autowired
+    private MetricsService metricsService;
+
+
+
 
     public  List<String> getAllSources(String country, String category) {
 
@@ -142,8 +147,10 @@ public class FetchService {
     public List<String> fetchNews(String id) {
         UserDetails user = userRepo.findByEmail(id);
         NewsData newsData = newsDataRepository.findByCountryAndCategory(user.getCountry(), user.getCategory());
+        metricsService.getCounterForTopHeadlines("topHeadlines", "200")
+                .labels(user.getCategory(), user.getCountry(), "200").inc();
        // System.out.println(newsData.getNewsList().size());
-        if (newsData != null && newsData.getNewsList() != null && !newsData.getNewsList().isEmpty()) {
+        if (newsData != null && newsData.getNewsList() != null) {
             List<News> newsList = newsData.getNewsList();
             List<String> titles = new ArrayList<>();
 

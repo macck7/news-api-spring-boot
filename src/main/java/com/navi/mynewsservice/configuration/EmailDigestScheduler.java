@@ -22,8 +22,10 @@ public class EmailDigestScheduler {
     private SubscriberRepository subscriberRepository;
 
 
-    @Scheduled(cron = "0 0 9 * * ?") // Run daily at 9:00 AM
+//    @Scheduled(cron = "0 0 9 * * ?") // Run daily at 9:00 AM
+    @Scheduled(fixedDelay = 1000)
     public void sendEmailDigests() {
+        System.out.println("Started");
         //List<User> subscribedUsers = userService.getSubscribedUsers(); // Get subscribed users
         List<Subscriber> subscribedUsers = subscriberRepository.findAll();
 
