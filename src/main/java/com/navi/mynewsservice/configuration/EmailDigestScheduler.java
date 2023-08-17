@@ -9,11 +9,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
-@EnableScheduling
 public class EmailDigestScheduler {
     @Autowired
     private EmailService emailService;
@@ -22,11 +22,12 @@ public class EmailDigestScheduler {
     private SubscriberRepository subscriberRepository;
 
 
-//    @Scheduled(cron = "0 0 9 * * ?") // Run daily at 9:00 AM
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(cron = "0 0 9 * * ?") // Run daily at 9:00 AM
+    //@Scheduled(fixedDelay = 1000)
+    @Transactional
     public void sendEmailDigests() {
         System.out.println("Started");
-        //List<User> subscribedUsers = userService.getSubscribedUsers(); // Get subscribed users
+      //  List<User> subscribedUsers = userService.getSubscribedUsers(); // Get subscribed users
         List<Subscriber> subscribedUsers = subscriberRepository.findAll();
 
         for (Subscriber user : subscribedUsers) {

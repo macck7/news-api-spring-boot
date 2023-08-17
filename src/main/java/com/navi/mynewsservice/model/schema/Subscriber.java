@@ -15,6 +15,8 @@ public class Subscriber {
     @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
     int id;
     String email;
+    String country;
+    String category;
 
     public Subscriber() {
     }
