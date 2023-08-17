@@ -34,14 +34,16 @@ public class NewsController {
 
     @GetMapping("/sources/{id}")
     public ResponseEntity<?> getSources(@PathVariable String id) {
-
+        try {
             long startTime = System.currentTimeMillis();
             List<String> response = newsService.getSources(id);
             long endTime = System.currentTimeMillis();
             long tt = endTime - startTime;
-            apiCallRecordRepo.save(new ApiCallRecord("/sources/", "GET + source ", "response.toString()", tt));
+            apiCallRecordRepo.save(new ApiCallRecord("/sources/", "GET + source ", response.toString(), tt));
             return new ResponseEntity<>(response, HttpStatus.OK);
-
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
 }

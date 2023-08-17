@@ -8,13 +8,8 @@ import com.navi.mynewsservice.entity.Source;
 import com.navi.mynewsservice.entity.Sources;
 import com.navi.mynewsservice.exception.CategoryNotFoundException;
 import com.navi.mynewsservice.exception.InvalidDateException;
-import com.navi.mynewsservice.model.repo.NewsDataRepository;
-import com.navi.mynewsservice.model.repo.UserRepo;
 import com.navi.mynewsservice.model.schema.ApiCallRecord;
 import com.navi.mynewsservice.model.repo.ApiCallRecordRepo;
-import com.navi.mynewsservice.model.schema.News;
-import com.navi.mynewsservice.model.schema.NewsData;
-import com.navi.mynewsservice.model.schema.UserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -32,18 +27,6 @@ public class FetchService {
     private ValidateService validateService;
     @Autowired
     private ApiCallRecordRepo apiCallRecordRepo;
-
-    @Autowired
-    private UserRepo userRepo;
-
-    @Autowired
-    NewsDataRepository newsDataRepository;
-
-    @Autowired
-    private MetricsService metricsService;
-
-
-
 
     public  List<String> getAllSources(String country, String category) {
 
@@ -74,7 +57,7 @@ public class FetchService {
 
             long endTime = System.currentTimeMillis();
             long tt = endTime - startTime;
-            apiCallRecordRepo.save(new ApiCallRecord("/sources", "GET ", "response.toString()", tt));
+            apiCallRecordRepo.save(new ApiCallRecord("/sources", "GET ", response.toString(), tt));
             return articles;
 
         } catch (Exception e) {
@@ -84,43 +67,35 @@ public class FetchService {
     }
 
 
-
-    public List<String> getNewsById(String country, String category, String count, List<String> sources, String from, String to) throws Exception {
+    public List<String> getNewsById( String country,String category, String count, List<String> sources, String from, String to) throws Exception {
         long startTime = System.currentTimeMillis();
         String apiUrl = "https://newsapi.org/v2/top-headlines";
         String apiKey = "b46085f75a39489b88704fb9c9f7e4fc";
-
-        StringBuilder urlBuilder = new StringBuilder(apiUrl)
-                .append("?country=").append(country)
-                .append("&category=").append(category)
-                .append("&apiKey=").append(apiKey);
-
+        String url = apiUrl + "?country=" + country + "&category=" + category + "&apiKey=" + apiKey;
         String endpoint = "/top-headlines";
-        if (from != null) {
-            if (validateService.validateDate(from)) {
+        if(from != null){
+            if(validateService.validateDate(from)) {
                 throw new InvalidDateException("News can't be shown before 30 days");
-            } else {
-                urlBuilder.append("&from=").append(from);
-                endpoint = endpoint + "/from";
             }
+            else url = url + "&from=" + from;
+            endpoint = endpoint+"/from";
         }
 
-        if (to != null) {
-            urlBuilder.append("&to=").append(to);
-            endpoint = endpoint + "/to";
+        if(to != null){
+            url = url + "&to=" + to;
+            endpoint = endpoint+"/to";
         }
-
-        if (count != null) {
-            urlBuilder.append("&pageSize=").append(Integer.parseInt(count));
-            endpoint = endpoint + "/count";
+        if(count != null){
+            url = url + "&pageSize=" + Integer.parseInt(count);
+            endpoint = endpoint+"/count";
         }
 
         List<String> titles = new ArrayList<>();
-        int i = 1;
-        for (String source : sources) {
-            String sourceUrl = urlBuilder.toString() + "&source=" + source;
+        int i=1;
+        for(String source: sources) {
+
             ResponseEntity<NewsResponse> newsResponseEntity = restTemplate.exchange(
-                    sourceUrl, HttpMethod.GET, null, NewsResponse.class);
+                    url + "&source=" + source, HttpMethod.GET, null, NewsResponse.class);
             NewsResponse newsResponse = newsResponseEntity.getBody();
             List<Article> articles = newsResponse.getArticles();
             for (Article article : articles) {
@@ -131,11 +106,9 @@ public class FetchService {
                 i = 0;
             }
         }
-
-        if (titles.isEmpty()) {
+        if(titles.size() == 0) {
             throw new CategoryNotFoundException("No articles found for the given country and category.");
         }
-
         long endTime = System.currentTimeMillis();
         long tt = endTime - startTime;
         apiCallRecordRepo.save(new ApiCallRecord(endpoint, "GET ", "titles.toString()", tt));
@@ -143,60 +116,7 @@ public class FetchService {
     }
 
 
-    int i=0;
-    public List<String> fetchNews(String id) {
-        UserDetails user = userRepo.findByEmail(id);
-        NewsData newsData = newsDataRepository.findByCountryAndCategory(user.getCountry(), user.getCategory());
-        metricsService.getCounterForTopHeadlines("topHeadlines", "200")
-                .labels(user.getCategory(), user.getCountry(), "200").inc();
-       // System.out.println(newsData.getNewsList().size());
-        if (newsData != null && newsData.getNewsList() != null) {
-            List<News> newsList = newsData.getNewsList();
-            List<String> titles = new ArrayList<>();
-
-            for (News news : newsList) {
-                titles.add(news.getTitle());
-            }
-            return titles;
-        } else {
-            System.out.println(i);
-            i++;
-            String apiUrl = "https://newsapi.org/v2/top-headlines";
-            String apiKey = "b46085f75a39489b88704fb9c9f7e4fc";
-
-            StringBuilder urlBuilder = new StringBuilder(apiUrl)
-                    .append("?country=").append(user.getCountry())
-                    .append("&category=").append(user.getCategory())
-                    .append("&apiKey=").append(apiKey);
-
-            List<String> titles = new ArrayList<>();
-
-            ResponseEntity<NewsResponse> newsResponseEntity = restTemplate.exchange(urlBuilder.toString(), HttpMethod.GET, null, NewsResponse.class);
-            NewsResponse newsResponse = newsResponseEntity.getBody();
-
-            if (newsResponse != null && newsResponse.getArticles() != null) {
-                List<Article> articles = newsResponse.getArticles();
-                List<News> newsList = new ArrayList<>();
-                for (Article article : articles) {
-                    titles.add(article.getTitle());
-                    newsList.add(new News(article.getTitle()));
-                }
-
-                newsData = new NewsData();
-                newsData.setCountry(user.getCountry());
-                newsData.setCategory(user.getCategory());
-                newsData.setNewsList(newsList);
-
-                for (News news : newsList) {
-                    news.setNewsData(newsData);
-                }
-
-                newsDataRepository.save(newsData);
-            }
-
-            return titles;
-        }
-    }
-
 }
+
+
 
