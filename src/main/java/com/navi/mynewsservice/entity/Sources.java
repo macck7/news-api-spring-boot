@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class Sources {
     private List<Source> sources;
-    public Sources() {
+    Sources() {
         sources = new ArrayList<>();
     }
 }
